@@ -6,8 +6,6 @@ import pandas as pd
 import numpy as np
 import os, warnings
 import matplotlib.pyplot as plt
-# from tqdm import tqdm
-# from tabulate import tabulate
 from math import cos, sin, radians
 warnings.filterwarnings('ignore')
 
@@ -31,8 +29,6 @@ def rotate_signals(s1, s2, ang):
 	r = - s2 * sin(ang) - s1 * cos(ang)
 	t = - s2 * cos(ang) + s1 * sin(ang)
 	return r, t
-
-
 def acc2disp(st):
 	# Get Displacement Waveform
 	st.detrend('linear')
@@ -51,21 +47,11 @@ def acc2disp(st):
 	st_disp.filter('bandpass',freqmin=0.8,freqmax=10)# 0.8 5
 	return st, st_disp
 
-w0 = 0.45
-sigma = 0.05
-
 # Read an earthquake
 year = '2024'
 evid = '2130'
 sta = 'TOLM'
 ev_path = f'../DBs/EQData/{year}/{evid}'
-
-# # 1662	2022-08-25 00:34:36.010000	46.2352	12.7228	8.9	3.5
-# evla = 46.2352
-# evlo = 12.7228
-# stla = 46.067017
-# stlo = 12.58815
-# r_epi = round(degrees2kilometers(locations2degrees(lat1=evla, long1=evlo, lat2=stla, long2=stlo)),2)
 
 # Load Event Catalog
 ev_db = pd.read_csv('../DBs/EQCatalog/catalog2021-2024.csv', skiprows=range(1, 2131))
@@ -75,15 +61,10 @@ ev_db[['Time']] = ev_db[['Time']].apply(pd.to_datetime)
 building_db = pd.read_csv('../DBs/sentinella_db.csv',sep=',')
 building_db['Angle'].fillna(building_db['GearthAngle'], inplace=True)
 
-
 # Reverse Channels
 reversed_chan = {'CORD':'X','MNFL':'Y','PRPN':'X','UNIU':'N'}#,'UNIU':'E'
 
-
 path = '../DBs/EQData/'
-
-# years = ev_db.Time.dt.year
-# print(years)
 
 for i, row in tqdm(ev_db.iterrows()):
 	year = str(row['Time'].year)
@@ -121,7 +102,6 @@ for i, row in tqdm(ev_db.iterrows()):
 			sigma = 0.05
 			print(sta,n_floor,def_w0(n_floor),f0s,T0,angle)
 
-
 			# Get Top-Bottom Waveform
 			st_bottom = st.select(location=locs[0])
 			st_top = st.select(location=locs[1])
@@ -131,21 +111,15 @@ for i, row in tqdm(ev_db.iterrows()):
 					if tr.stats.channel[-1] == reversed_chan[tr.stats.station]:
 						tr.data = -tr.data
 
-			# # Rotate Bottom to X-Y
-			# if angle > 180:
-			# 	anguse = 360-angle
 			anguse = angle
 			if np.isnan(angle):
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, 0)
 				st_bottom[0].data = x
 				st_bottom[1].data = y
-				# st_bottom.rotate(method='NE->RT',back_azimuth=0)
 			else:
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, anguse)
 				st_bottom[0].data = x
-				st_bottom[1].data = y
-				# st_bottom.rotate(method='NE->RT',back_azimuth=angle)
-			
+				st_bottom[1].data = y	
 
 			st_bottom, st_bottom_disp = acc2disp(st_bottom)
 			st_top, st_top_disp = acc2disp(st_top)			
@@ -191,29 +165,10 @@ for i, row in tqdm(ev_db.iterrows()):
 				axs[0].plot(disp_meas,color='orange',label=f'{tr_top_disp.stats.channel} displacement simulated')
 				axs[1].plot(drift_meas,color='blue',label=f'{tr_top_disp.stats.channel} drift')
 				axs[1].plot(drift_calc,color='orange',label=f'{tr_top_disp.stats.channel} drift simulated')
-
-				# fig, axs = plt.subplots(5,1,sharex=True,sharey=True,dpi=300,figsize=(18,6))
-				# axs[0].plot(tr_bot.times(),tr_bot.data,color='r',label=f'Observed PGA At Ground Floor:{max(abs(tr_bot_disp.data))}')
-				# axs[1].plot(tr_bot.times(),tr_top.data,color='k',label=f'Observed PGA At Top Floor:{max(abs(tr_top_disp.data))}')
-				# axs[2].plot(tr_bot.times(),tr_bot.data,color='r',alpha=1)
-				# drift_pgd = max(abs(tr_top_pred.data))
-				# axs[2].plot(tr_bot.times(),tr_top_pred.data,color='g',alpha=1,label=f'Calculated Drift:{drift_pgd}')
-				# axs[3].plot(tr_bot.times(),tr_top.data,color='k')
-				# axs[3].plot(tr_bot.times(),tr_top_pred.data,color='g',alpha=1)
-				# total_rel_disp_pgd = max(abs(tr_top.data-tr_bot.data))
-				# axs[4].plot(tr_bot.times(),tr_top.data-tr_bot.data,color='magenta',label=f'Observed Relative ACC:{total_rel_disp_pgd}')
-				# total_pred_pgd = max(abs(tr_top_pred.data+ tr_bot.data))
-				# axs[4].plot(tr_bot.times(),tr_top_pred.data + tr_bot.data,color='g',alpha=1,label=f'Total Predicted ACC:{total_pred_pgd}')# + tr_bot_disp.data
 				axs[0].legend(loc='upper right')
 				axs[1].legend(loc='upper right')
-				# axs[1].legend(loc='upper right')
-				# axs[2].legend(loc='upper right')
-				# # axs[3].legend(loc='upper right')
-				# axs[4].legend(loc='upper right')
-				# Title
-				# axs[0].set_xlim([tr_bot.times()[0],tr_bot.times()[int(20*tr_bot.stats.sampling_rate)]])
 				axs[0].set_xlim([0,4000])
-				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
+				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0} | Sigma:{sigma} | Angle:{angle}')
 				plt.tight_layout()
 				try:
 					os.mkdir(f'../Figures/Relative_Displacement/{evid}/')
