@@ -32,22 +32,23 @@ def rotate_signals(s1, s2, ang):
 
 
 def acc2disp(st,freqmin=0.8,freqmax=10):
-	# Get Displacement Waveform
+	# Get Velocity & Displacement Waveform
 	st.detrend('linear')
 	st.taper(max_percentage=0.05)
-	# st.filter('lowpass',freq=1)
+	st.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 	st_disp = st.copy()
 	# ACC 2 VEL
-	st_disp.integrate('cumtrapz')
-	st_disp.detrend('linear')
-	st_disp.taper(max_percentage=0.05)
-	st_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
+	st_vel.integrate('cumtrapz')
+	st_vel.detrend('linear')
+	st_vel.taper(max_percentage=0.05)
+	st_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
+	st_disp = st_vel.copy()
 	# VEL 2 DISP
 	st_disp.integrate()
 	st_disp.detrend('linear')
 	st_disp.taper(max_percentage=0.05)
 	st_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
-	return st, st_disp
+	return st, st_vel, st_disp
 
 # Read an earthquake
 year = '2024'
@@ -134,11 +135,12 @@ for i, row in tqdm(ev_db.iterrows()):
 				st_bottom[1].data = x
 			
 
-			st_bottom, st_bottom_disp = acc2disp(st_bottom,freqmin=freqmin,freqmax=freqmax)
-			st_top, st_top_disp = acc2disp(st_top,freqmin=freqmin,freqmax=freqmax)			
+			st_bottom, st_bottom_vel, st_bottom_disp = acc2disp(st_bottom,freqmin=freqmin,freqmax=freqmax)
+			st_top, st_top_vel, st_top_disp = acc2disp(st_top,freqmin=freqmin,freqmax=freqmax)			
 
-			for tr_bot,tr_bot_disp,tr_top,tr_top_disp in zip(st_bottom,st_bottom_disp,st_top,st_top_disp):
+			for tr_bot,tr_bot_vel,tr_bot_disp,tr_top,tr_top_vel,tr_top_disp in zip(st_bottom,st_bottom_vel, st_bottom_disp,st_top,st_top_vel,st_top_disp):
 				top_pred_disp = [0,0]
+				top_pred_vel = [0,0]
 				top_pred_acc = [0,0]
 				if tr_top.stats.channel[-1] == 'X':
 					sigma = sigmax
@@ -155,6 +157,9 @@ for i, row in tqdm(ev_db.iterrows()):
 						S0 = np.exp(-sigma*w0*dt)*np.sin(wd*dt)/(wd*dt)
 	
 						val_d_i = b1*top_pred_disp[i-1] + b2*top_pred_disp[i-2] - S0*(dt**2)*tr_bot.data[i-1]
+						aj12 = (tr_bot.data[i]+tr_bot.data[i-1])/2
+						aj32 = (tr_bot.data[i-1]+tr_bot.data[i-2])/2
+						val_v_i = b1*top_pred_vel[i-1] + b2*top_pred_vel[i-2] - S0*dt*(aj12-aj32)
 						val_a_i = b1*top_pred_acc[i-1] + b2*top_pred_acc[i-2] - S0*(tr_bot.data[i]-2*tr_bot.data[i-1]+tr_bot.data[i-2])
 						top_pred_disp.append(val_d_i)
 						top_pred_acc.append(val_a_i)
@@ -164,6 +169,12 @@ for i, row in tqdm(ev_db.iterrows()):
 				tr_top_pred_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_disp.detrend('linear')
 				tr_top_pred_disp.taper(0.05)
+
+				tr_top_pred_vel = Trace(data=np.array(top_pred_vel))
+				tr_top_pred_vel.stats.delta = dt
+				# tr_top_pred_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
+				tr_top_pred_vel.detrend('linear')
+				tr_top_pred_vel.taper(0.05)
 				
 				tr_top_pred_acc = Trace(data=np.array(top_pred_acc))
 				tr_top_pred_acc.stats.delta = dt
@@ -173,7 +184,6 @@ for i, row in tqdm(ev_db.iterrows()):
 
 				# base_sig = tr_top_pred_acc.data# + tr_bot.data
 				disp_meas = tr_top_pred_disp.data + tr_bot_disp.data 
-
 				drift_calc = tr_top_pred_disp.data# - tr_bot_disp.data
 				drift_meas = tr_top_disp.data - tr_bot_disp.data
 
@@ -186,7 +196,7 @@ for i, row in tqdm(ev_db.iterrows()):
 				axs[0].legend(loc='upper right')
 				axs[1].legend(loc='upper right')
 
-				axs[0].set_xlim([0,4000])
+				# axs[0].set_xlim([0,3000])
 				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
 				plt.tight_layout()
 
@@ -194,13 +204,12 @@ for i, row in tqdm(ev_db.iterrows()):
 					os.mkdir(f'../Figures/Relative_Displacement/{evid}/')
 				except:
 					pass
-				# plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_{T0s[tr_top.stats.channel[-1]]}_{sigma}.png')
-				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}.png')
+				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_disp.png')
 				plt.close(fig)
 
+				# ACCELERATION
 				 # = tr_top_pred_acc.data# + tr_bot.data
 				acc_meas = tr_top_pred_acc.data + tr_bot.data 
-
 				acc_drift_calc = tr_top_pred_acc.data# - tr_bot_disp.data
 				acc_drift_meas = tr_top.data - tr_bot.data
 
@@ -213,13 +222,28 @@ for i, row in tqdm(ev_db.iterrows()):
 				axs[0].legend(loc='upper right')
 				axs[1].legend(loc='upper right')
 
-				axs[0].set_xlim([0,4000])
+				# axs[0].set_xlim([0,3000])
 				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
 				plt.tight_layout()
-
-				try:
-					os.mkdir(f'../Figures/Relative_Displacement/{evid}/')
-				except:
-					pass
 				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_acc.png')
+				plt.close(fig2)
+
+				# VELOCITY
+				vel_meas = tr_top_pred_vel.data + tr_bot_vel.data # np.concatenate(([0,0], tr_bot.data[2:]), axis=0)
+				vel_drift_calc = tr_top_pred_vel.data# - tr_bot_disp.data
+				vel_drift_meas = tr_top_vel.data - tr_bot_vel.data
+
+				fig2, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
+				axs[0].plot(tr_top_vel.data,color='blue',label=f'{tr_top_disp.stats.channel} velocity')#tr_bot.times(),
+				axs[0].plot(vel_meas,color='orange',label=f'{tr_top_disp.stats.channel} velocity simulated')
+				axs[1].plot(vel_drift_meas,color='blue',label=f'{tr_top_disp.stats.channel} drift')
+				axs[1].plot(vel_drift_calc,color='orange',label=f'{tr_top_disp.stats.channel} drift simulated')
+
+				axs[0].legend(loc='upper right')
+				axs[1].legend(loc='upper right')
+
+				# axs[0].set_xlim([0,3000])
+				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
+				plt.tight_layout()
+				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_vel.png')
 				plt.close(fig2)
