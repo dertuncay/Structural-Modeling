@@ -1,13 +1,11 @@
 import numpy as np
 from obspy import read, read_inventory, Trace, Stream
 from obspy.signal.rotate import rotate_ne_rt
-from obspy.geodetics.base import locations2degrees, degrees2kilometers
 import pandas as pd
 import numpy as np
 import os, warnings
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-# from tabulate import tabulate
 from math import cos, sin, radians
 warnings.filterwarnings('ignore')
 
@@ -23,13 +21,11 @@ j: time increment
 def T2w(T):
 	return 2*np.pi/T
 
-
 def rotate_signals(s1, s2, ang):
 	ba = radians(ang)
 	r = - s2 * sin(ang) - s1 * cos(ang)
 	t = - s2 * cos(ang) + s1 * sin(ang)
 	return r, t
-
 
 def acc2disp(st,freqmin=0.8,freqmax=10):
 	# Get Velocity & Displacement Waveform
