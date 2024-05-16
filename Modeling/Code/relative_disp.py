@@ -155,7 +155,6 @@ for i, row in tqdm(ev_db.iterrows()):
 						b1 = 2*np.exp(-sigma*w0*dt)*np.cos(wd*dt)
 						b2 = -np.exp(-2*sigma*w0*dt)
 						S0 = np.exp(-sigma*w0*dt)*np.sin(wd*dt)/(wd*dt)
-	
 						val_d_i = b1*top_pred_disp[i-1] + b2*top_pred_disp[i-2] - S0*(dt**2)*tr_bot.data[i-1]
 						aj12 = (tr_bot.data[i]+tr_bot.data[i-1])/2
 						aj32 = (tr_bot.data[i-1]+tr_bot.data[i-2])/2
