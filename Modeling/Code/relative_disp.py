@@ -46,6 +46,47 @@ def acc2disp(st,freqmin=0.8,freqmax=10):
 	st_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
 	return st, st_vel, st_disp
 
+def jin2004(tr_bot,w0,sigma,dt,outlist,outtype='DIS'):
+	# Z-transform parameters
+	wd = w0*np.sqrt(1-sigma**2)
+	b1 = 2*np.exp(-sigma*w0*dt)*np.cos(wd*dt)
+	b2 = -np.exp(-2*sigma*w0*dt)
+	S0 = np.exp(-sigma*w0*dt)*np.sin(wd*dt)/(wd*dt)
+	if outtype == 'DIS':
+		val_d_i = b1*outlist[i-1] + b2*outlist[i-2] - S0*(dt**2)*tr_bot.data[i-1]
+		outlist.append(val_d_i)
+	elif outtype == 'VEL':
+		# aj12 = (tr_bot.data[i]+tr_bot.data[i-1])/2
+		# aj32 = (tr_bot.data[i-1]+tr_bot.data[i-2])/2
+		val_v_i = b1*outlist[i-1] + b2*outlist[i-2] - S0*dt*(tr_bot.data[i-1]-tr_bot.data[i-2])#(aj12-aj32)
+		outlist.append(val_v_i)
+	elif outtype == 'ACC':
+		val_a_i = b1*outlist[i-1] + b2*outlist[i-2] - S0*(tr_bot.data[i]-2*tr_bot.data[i-1]+tr_bot.data[i-2])
+		outlist.append(val_a_i)
+	return outlist
+
+def lee1990(tr_bot,w0,sigma,dt,outlist,outtype='DIS'):
+	alpha = w0*sigma
+	beta = w0*np.sqrt(1-sigma**2)
+	T = dt
+	# Z-transform parameters
+	b = 2*np.exp(-alpha*T)*np.cos(beta*T)
+	c = np.exp(-2*alpha*T)
+	a0 = np.exp(-alpha*T)
+	if outtype == 'DIS':
+		gamma0 = 1
+		val_d_i = b*outlist[i-1] - c*outlist[i-2] - gamma0*a0*T*tr_bot.data[i-1]
+		outlist.append(val_d_i)
+	elif outtype == 'VEL':
+		gamma1 = 1
+		val_v_i = b*outlist[i-1] - c*outlist[i-2] - gamma1*a0*(tr_bot.data[i-1]-tr_bot.data[i-2])#(aj12-aj32)
+		outlist.append(val_v_i)
+	elif outtype == 'ACC':
+		gamma2 = 1
+		val_a_i = b*outlist[i-1] - c*outlist[i-2] - gamma2*a0*(tr_bot.data[i]-2*tr_bot.data[i-1]+tr_bot.data[i-2])
+		outlist.append(val_a_i)
+	return outlist
+	
 # Read an earthquake
 year = '2024'
 evid = '2130'
@@ -142,36 +183,30 @@ for i, row in tqdm(ev_db.iterrows()):
 					sigma = sigmax
 				elif tr_top.stats.channel[-1] == 'Y':
 					sigma = sigmay
+				dt = tr_bot.stats.delta
+				w0 = w0s[tr_top.stats.channel[-1]]
 				for i in range(tr_bot.stats.npts):
 					if i > 1:
-						dt = tr_bot.stats.delta
-						# Z-transform parameters
-						w0 = w0s[tr_top.stats.channel[-1]]
-						wd = w0*np.sqrt(1-sigma**2)
-						b1 = 2*np.exp(-sigma*w0*dt)*np.cos(wd*dt)
-						b2 = -np.exp(-2*sigma*w0*dt)
-						S0 = np.exp(-sigma*w0*dt)*np.sin(wd*dt)/(wd*dt)
-						val_d_i = b1*top_pred_disp[i-1] + b2*top_pred_disp[i-2] - S0*(dt**2)*tr_bot.data[i-1]
-						aj12 = (tr_bot.data[i]+tr_bot.data[i-1])/2
-						aj32 = (tr_bot.data[i-1]+tr_bot.data[i-2])/2
-						val_v_i = b1*top_pred_vel[i-1] + b2*top_pred_vel[i-2] - S0*dt*(aj12-aj32)
-						val_a_i = b1*top_pred_acc[i-1] + b2*top_pred_acc[i-2] - S0*(tr_bot.data[i]-2*tr_bot.data[i-1]+tr_bot.data[i-2])
-						top_pred_disp.append(val_d_i)
-						top_pred_acc.append(val_a_i)
-				dt = tr_bot.stats.delta
+						top_pred_dis = jin2004(tr_bot,w0,sigma,dt,top_pred_dis,outtype='DIS')
+						top_pred_vel = jin2004(tr_bot,w0,sigma,dt,top_pred_vel,outtype='VEL')
+						top_pred_acc = jin2004(tr_bot,w0,sigma,dt,top_pred_acc,outtype='ACC')
+						# top_pred_dis = lee1990(tr_bot,w0,sigma,dt,top_pred_dis,outtype='DIS')
+						# top_pred_vel = lee1990(tr_bot,w0,sigma,dt,top_pred_vel,outtype='VEL')
+						# top_pred_acc = lee1990(tr_bot,w0,sigma,dt,top_pred_acc,outtype='ACC')
+				
 				tr_top_pred_disp = Trace(data=np.array(top_pred_disp))
 				tr_top_pred_disp.stats.delta = dt
 				tr_top_pred_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_disp.detrend('linear')
 				tr_top_pred_disp.taper(0.05)
 
-				tr_top_pred_vel = Trace(data=np.array(top_pred_vel))
+				tr_top_pred_vel = Trace(data=-np.array(top_pred_vel)) # LOOK AT THE NEGATIVE SIGN!
 				tr_top_pred_vel.stats.delta = dt
-				# tr_top_pred_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
+				tr_top_pred_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_vel.detrend('linear')
 				tr_top_pred_vel.taper(0.05)
 				
-				tr_top_pred_acc = Trace(data=np.array(top_pred_acc))
+				tr_top_pred_acc = Trace(data=-np.array(top_pred_acc)) # LOOK AT THE NEGATIVE SIGN!
 				tr_top_pred_acc.stats.delta = dt
 				tr_top_pred_acc.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_acc.detrend('linear')
