@@ -22,7 +22,7 @@ def T2w(T):
 	return 2*np.pi/T
 
 def rotate_signals(s1, s2, ang):
-	ba = radians(ang)
+	ba = radians(360-ang)
 	r = - s2 * sin(ang) - s1 * cos(ang)
 	t = - s2 * cos(ang) + s1 * sin(ang)
 	return r, t
@@ -164,12 +164,12 @@ for i, row in tqdm(ev_db.iterrows()):
 			anguse = angle
 			if np.isnan(angle):
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, 0)
-				st_bottom[0].data = y
-				st_bottom[1].data = x
+				st_bottom[0].data = x
+				st_bottom[1].data = y
 			else:
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, anguse)
-				st_bottom[0].data = y
-				st_bottom[1].data = x
+				st_bottom[0].data = -x # MIND THE NEGATIVE SIGN!
+				st_bottom[1].data = y
 			
 
 			st_bottom, st_bottom_vel, st_bottom_disp = acc2disp(st_bottom,freqmin=freqmin,freqmax=freqmax)
@@ -200,13 +200,13 @@ for i, row in tqdm(ev_db.iterrows()):
 				tr_top_pred_disp.detrend('linear')
 				tr_top_pred_disp.taper(0.05)
 
-				tr_top_pred_vel = Trace(data=-np.array(top_pred_vel)) # LOOK AT THE NEGATIVE SIGN!
+				tr_top_pred_vel = Trace(data=np.array(top_pred_vel)) # LOOK AT THE NEGATIVE SIGN!
 				tr_top_pred_vel.stats.delta = dt
 				tr_top_pred_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_vel.detrend('linear')
 				tr_top_pred_vel.taper(0.05)
 				
-				tr_top_pred_acc = Trace(data=-np.array(top_pred_acc)) # LOOK AT THE NEGATIVE SIGN!
+				tr_top_pred_acc = Trace(data=np.array(top_pred_acc)) # LOOK AT THE NEGATIVE SIGN!
 				tr_top_pred_acc.stats.delta = dt
 				tr_top_pred_acc.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_acc.detrend('linear')
