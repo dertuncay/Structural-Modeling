@@ -27,8 +27,8 @@ def GetBackazimuth(azimuth):
 	else:
 		return (azimuth-180)
 
-def T2w(T):
-	return 2*np.pi/T
+def T2w(f):
+	return 2*np.pi*f
 
 def rotate_signals(s1, s2, ang):
 	ba = radians(ang)
@@ -46,13 +46,11 @@ def acc2disp(st,freqmin=0.8,freqmax=10):
 	st_vel.integrate('cumtrapz')
 	st_vel.detrend('linear')
 	st_vel.taper(max_percentage=0.05)
-	st_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
 	st_disp = st_vel.copy()
 	# VEL 2 DISP
 	st_disp.integrate()
 	st_disp.detrend('linear')
 	st_disp.taper(max_percentage=0.05)
-	st_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)# 0.8 5
 	return st, st_vel, st_disp
 
 def jin2004(tr_bot,w0,sigma,dt,outlist,outtype='DIS'):
@@ -96,7 +94,7 @@ def lee1990(tr_bot,w0,sigma,dt,outlist,outtype='DIS'):
 		outlist.append(val_a_i)
 	return outlist
 	
-def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,xlim=[None,None]):
+def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,bot_obs,xlim=[None,None]):
 	if dom == 'ACC':
 		outlabel = 'acceleration'
 		ftag = 'acc'
@@ -107,7 +105,7 @@ def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,
 		outlabel = 'displacement'
 		ftag = 'disp'
 
-	fig, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
+	fig, axs = plt.subplots(3,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
 	axs[0].plot(top_obs,color='blue',label=f'{chan} {outlabel}')#tr_bot.times(),
 	axs[0].plot(top_pred,color='orange',label=f'{chan} {outlabel} simulated')
 	axs[1].plot(drift_obs,color='blue',label=f'{chan} drift')
@@ -117,6 +115,7 @@ def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,
 	axs[0].set_title(f'Evid:{evid} | ID:{id} | W0:{T0s[chan[-1]]} | Sigma:{sigma} | Angle:{angle}')
 	if xlim != [None,None]:
 		axs[0].set_xlim(xlim)
+	axs[2].plot(bot_obs,color='blue',label=f'{chan} {outlabel} Bottom')
 	plt.tight_layout()
 	plt.savefig(f'../Figures/Relative_Displacement/{evid}/{id}_{ftag}.png')
 	plt.close(fig)
@@ -202,13 +201,13 @@ for year, evid in tqdm(zip(years,evids)):
 
 			anguse = GetBackazimuth(angle)
 			if np.isnan(angle):
-				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, 0)
-				st_bottom[0].data = y
-				st_bottom[1].data = x
+				base_y,base_x = rotate_signals(st_bottom[1].data, st_bottom[0].data, 0)
+				st_bottom[0].data = base_x
+				st_bottom[1].data = base_y
 			else:
-				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, anguse)
-				st_bottom[0].data = y
-				st_bottom[1].data = x
+				base_y,base_x = rotate_signals(st_bottom[1].data, st_bottom[0].data, anguse)
+				st_bottom[0].data = base_x
+				st_bottom[1].data = base_y
 			
 
 			st_bottom, st_bottom_vel, st_bottom_disp = acc2disp(st_bottom,freqmin=freqmin,freqmax=freqmax)
@@ -229,25 +228,19 @@ for year, evid in tqdm(zip(years,evids)):
 						top_pred_dis = jin2004(tr_bot,w0,sigma,dt,top_pred_dis,outtype='DIS')
 						top_pred_vel = jin2004(tr_bot,w0,sigma,dt,top_pred_vel,outtype='VEL')
 						top_pred_acc = jin2004(tr_bot,w0,sigma,dt,top_pred_acc,outtype='ACC')
-						# top_pred_dis = lee1990(tr_bot,w0,sigma,dt,top_pred_dis,outtype='DIS')
-						# top_pred_vel = lee1990(tr_bot,w0,sigma,dt,top_pred_vel,outtype='VEL')
-						# top_pred_acc = lee1990(tr_bot,w0,sigma,dt,top_pred_acc,outtype='ACC')
 				
 				tr_top_pred_disp = Trace(data=np.array(top_pred_disp))
 				tr_top_pred_disp.stats.delta = dt
-				tr_top_pred_disp.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_disp.detrend('linear')
 				tr_top_pred_disp.taper(0.05)
 
-				tr_top_pred_vel = Trace(data=np.array(top_pred_vel)) # LOOK AT THE NEGATIVE SIGN!
+				tr_top_pred_vel = Trace(data=np.array(top_pred_vel))
 				tr_top_pred_vel.stats.delta = dt
-				tr_top_pred_vel.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_vel.detrend('linear')
 				tr_top_pred_vel.taper(0.05)
 				
-				tr_top_pred_acc = Trace(data=np.array(top_pred_acc)) # LOOK AT THE NEGATIVE SIGN!
+				tr_top_pred_acc = Trace(data=np.array(top_pred_acc))
 				tr_top_pred_acc.stats.delta = dt
-				tr_top_pred_acc.filter('bandpass',freqmin=freqmin,freqmax=freqmax)
 				tr_top_pred_acc.detrend('linear')
 				tr_top_pred_acc.taper(0.05)
 
@@ -271,21 +264,26 @@ for year, evid in tqdm(zip(years,evids)):
 				pgaratpred.append(pga_top/pga_bot)
 
 				# DISPLACEMENT
-				disp_meas = tr_top_pred_disp.data + tr_bot_disp.data 
-				drift_calc = tr_top_pred_disp.data# - tr_bot_disp.data
-				drift_meas = tr_top_disp.data - tr_bot_disp.data
+				disp_pred = tr_top_pred_disp.data + tr_bot_disp.data 
+				drift_pred = tr_top_pred_disp.data
+				drift_obs = tr_top_disp.data - tr_bot_disp.data
 				# ACCELERATION
-				acc_meas = tr_top_pred_acc.data + tr_bot.data
-				acc_drift_calc = tr_top_pred_acc.data# - tr_bot_disp.data
-				acc_drift_meas = tr_top.data - tr_bot.data
+				acc_pred = tr_top_pred_acc.data + tr_bot.data
+				acc_drift_pred = tr_top_pred_acc.data
+				acc_drift_obs = tr_top.data - tr_bot.data
 				# VELOCITY
-				vel_meas = tr_top_pred_vel.data + tr_bot_vel.data
-				vel_drift_calc = tr_top_pred_vel.data# - tr_bot_disp.data
-				vel_drift_meas = tr_top_vel.data - tr_bot_vel.data
+				vel_pred = tr_top_pred_vel.data + tr_bot_vel.data
+				vel_drift_pred = tr_top_pred_vel.data
+				vel_drift_obs = tr_top_vel.data - tr_bot_vel.data
 
-				plot_res('DIS',tr_top_disp.stats.channel,tr_top_disp.data,disp_meas,drift_meas,drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
-				plot_res('VEL',tr_top_disp.stats.channel,tr_top_vel.data,vel_meas,vel_drift_meas,vel_drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
-				plot_res('ACC',tr_top_disp.stats.channel,tr_top.data,acc_meas,acc_drift_meas,acc_drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
+				try:
+					os.mkdir(f'../Figures/Relative_Displacement/{evid}/')
+				except:
+					pass
+				
+				plot_res('DIS',tr_top_disp.stats.channel,tr_top_disp.data,disp_pred,drift_obs,drift_pred,evid,tr_top.id,sigma,angle,tr_bot_disp.data,xlim=[0,3000])
+				plot_res('VEL',tr_top_disp.stats.channel,tr_top_vel.data,vel_pred,vel_drift_obs,vel_drift_pred,evid,tr_top.id,sigma,angle,tr_bot_vel.data,xlim=[0,3000])
+				plot_res('ACC',tr_top_disp.stats.channel,tr_top.data,acc_pred,acc_drift_obs,acc_drift_pred,evid,tr_top.id,sigma,angle,tr_bot.data,xlim=[0,3000])
 	# Save Results in a CSV file
 	db_ev['Station'] = stanames
 	db_ev['Channel'] = channelnames
