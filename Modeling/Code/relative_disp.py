@@ -31,7 +31,7 @@ def T2w(T):
 	return 2*np.pi/T
 
 def rotate_signals(s1, s2, ang):
-	ba = radians(360-ang)
+	ba = radians(ang)
 	r = - s2 * sin(ang) - s1 * cos(ang)
 	t = - s2 * cos(ang) + s1 * sin(ang)
 	return r, t
