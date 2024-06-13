@@ -18,6 +18,15 @@ a: accleration of the  record
 j: time increment
 '''
 
+def GetBackazimuth(azimuth):
+	if (azimuth < 0):
+		azimuth += 360
+		
+	if (azimuth <= 180):
+		return (180+azimuth)
+	else:
+		return (azimuth-180)
+
 def T2w(T):
 	return 2*np.pi/T
 
@@ -87,11 +96,31 @@ def lee1990(tr_bot,w0,sigma,dt,outlist,outtype='DIS'):
 		outlist.append(val_a_i)
 	return outlist
 	
-# Read an earthquake
-year = '2024'
-evid = '2130'
-sta = 'TOLM'
-ev_path = f'../DBs/EQData/{year}/{evid}'
+def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,xlim=[None,None]):
+	if dom == 'ACC':
+		outlabel = 'acceleration'
+		ftag = 'acc'
+	elif dom == 'VEL':
+		outlabel = 'velocity'
+		ftag = 'vel'
+	elif dom == 'DIS':
+		outlabel = 'displacement'
+		ftag = 'disp'
+
+	fig, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
+	axs[0].plot(top_obs,color='blue',label=f'{chan} {outlabel}')#tr_bot.times(),
+	axs[0].plot(top_pred,color='orange',label=f'{chan} {outlabel} simulated')
+	axs[1].plot(drift_obs,color='blue',label=f'{chan} drift')
+	axs[1].plot(drift_pred,color='orange',label=f'{chan} drift simulated')
+	axs[0].legend(loc='upper right')
+	axs[1].legend(loc='upper right')
+	axs[0].set_title(f'Evid:{evid} | ID:{id} | W0:{T0s[chan[-1]]} | Sigma:{sigma} | Angle:{angle}')
+	if xlim != [None,None]:
+		axs[0].set_xlim(xlim)
+	plt.tight_layout()
+	plt.savefig(f'../Figures/Relative_Displacement/{evid}/{id}_{ftag}.png')
+	plt.close(fig)
+	return
 
 freqmin = 1
 freqmax = 15
@@ -108,9 +137,21 @@ building_db['Angle'].fillna(building_db['GearthAngle'], inplace=True)
 reversed_chan = {'CORD':'X','MNFL':'Y','PRPN':'X','UNIU':'N'}#,'UNIU':'E'
 path = '../DBs/EQData/'
 
-for i, row in tqdm(ev_db.iterrows()):
-	year = str(row['Time'].year)
-	evid = str(row['evid'])
+# Read an earthquake
+years = ['2024']
+evids = ['2130']
+stas = ['TOLM']
+# evids = []; years = []
+# for folder in glob.glob('../DBs/EQData/*/*'):
+# 	evids.append(folder.split('/')[-1])
+# 	years.append(folder.split('/')[-2])
+
+for year, evid in tqdm(zip(years,evids)):
+	# Emtpy DataFrame 4 results
+	db_ev = pd.DataFrame(columns=['Station','Channel','PGABot','PGATop','PGATopReal','PGARat','PGARatReal','PGDBot','PGDTop','PGDTopReal','PGDRat','PGDRatReal'])
+	stanames = []; channelnames = []; 
+	pgabots = []; pgatops = []; pgatopreals = []; pgaratpred = []; pgaratreal = []
+	pgdbots = []; pgdtops = []; pgdtopreals = []; pgdratpred = []; pgdratreal = []
 
 	# mseeds = os.listdir(os.path.join(path,year,evid))
 	# stas = []
@@ -118,8 +159,7 @@ for i, row in tqdm(ev_db.iterrows()):
 	# 	sta = mseed.split('.')[0]
 	# 	if sta not in stas:
 	# 		stas.append(sta)
-	# for sta in stas:
-	if True:
+	for sta in stas:
 		st = read(os.path.join(path,year,evid)+'/'+sta+'.*',format='MSEED')
 		st.merge()
 		st = st.select(channel='HN*')
@@ -144,14 +184,13 @@ for i, row in tqdm(ev_db.iterrows()):
 			f0sy = [float(i) for i in f0y.split('-')]
 			T0x = round(((f0sx[1]-f0sx[0])/2)+f0sx[0],2)
 			T0y = round(((f0sy[1]-f0sy[0])/2)+f0sy[0],2)
-			sigmax = 0.03
-			sigmay = 0.05
+			sigmax = 0.03 # For TOLM
+			sigmay = 0.05 # For TOLM
 
 			w0s = {'X':T2w(T0x),'Y':T2w(T0y)}
 			T0s = {'X':T0x,'Y':T0y}
-			print(sta,n_floor,f0sx,T0x,f0sy,T0y,angle)
-
-
+			# print(sta,n_floor,f0sx,T0x,f0sy,T0y,angle)
+			
 			# Get Top-Bottom Waveform
 			st_bottom = st.select(location=locs[0])
 			st_top = st.select(location=locs[1])
@@ -161,15 +200,15 @@ for i, row in tqdm(ev_db.iterrows()):
 					if tr.stats.channel[-1] == reversed_chan[tr.stats.station]:
 						tr.data = -tr.data
 
-			anguse = angle
+			anguse = GetBackazimuth(angle)
 			if np.isnan(angle):
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, 0)
-				st_bottom[0].data = x
-				st_bottom[1].data = y
+				st_bottom[0].data = y
+				st_bottom[1].data = x
 			else:
 				x,y = rotate_signals(st_bottom[1].data, st_bottom[0].data, anguse)
-				st_bottom[0].data = -x # MIND THE NEGATIVE SIGN!
-				st_bottom[1].data = y
+				st_bottom[0].data = y
+				st_bottom[1].data = x
 			
 
 			st_bottom, st_bottom_vel, st_bottom_disp = acc2disp(st_bottom,freqmin=freqmin,freqmax=freqmax)
@@ -212,68 +251,53 @@ for i, row in tqdm(ev_db.iterrows()):
 				tr_top_pred_acc.detrend('linear')
 				tr_top_pred_acc.taper(0.05)
 
-				# base_sig = tr_top_pred_acc.data# + tr_bot.data
+				stanames.append(sta)
+				channelnames.append(tr_top.stats.channel[-1])
+				pgd_bot = max(abs(tr_bot_disp.data))
+				pgd_top = max(abs(tr_top_pred_disp.data + tr_bot_disp.data))
+				pgd_top_real = max(abs(tr_top_disp.data))
+				pgdbots.append(pgd_bot)
+				pgdtops.append(pgd_top)
+				pgdtopreals.append(pgd_top_real)
+				pgdratreal.append(pgd_top_real/pgd_bot)
+				pgdratpred.append(pgd_top/pgd_bot)
+				pga_bot = max(abs(tr_bot.data))
+				pga_top = max(abs(tr_top_pred_acc.data + tr_bot.data))
+				pga_top_real = max(abs(tr_top.data))
+				pgabots.append(pga_bot)
+				pgatops.append(pga_top)
+				pgatopreals.append(pga_top_real)
+				pgaratreal.append(pga_top_real/pga_bot)
+				pgaratpred.append(pga_top/pga_bot)
+
+				# DISPLACEMENT
 				disp_meas = tr_top_pred_disp.data + tr_bot_disp.data 
 				drift_calc = tr_top_pred_disp.data# - tr_bot_disp.data
 				drift_meas = tr_top_disp.data - tr_bot_disp.data
-
-				fig, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
-				axs[0].plot(tr_top_disp.data,color='blue',label=f'{tr_top_disp.stats.channel} displacement')#tr_bot.times(),
-				axs[0].plot(disp_meas,color='orange',label=f'{tr_top_disp.stats.channel} displacement simulated')
-				axs[1].plot(drift_meas,color='blue',label=f'{tr_top_disp.stats.channel} drift')
-				axs[1].plot(drift_calc,color='orange',label=f'{tr_top_disp.stats.channel} drift simulated')
-
-				axs[0].legend(loc='upper right')
-				axs[1].legend(loc='upper right')
-
-				# axs[0].set_xlim([0,3000])
-				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
-				plt.tight_layout()
-
-				try:
-					os.mkdir(f'../Figures/Relative_Displacement/{evid}/')
-				except:
-					pass
-				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_disp.png')
-				plt.close(fig)
-
 				# ACCELERATION
-				 # = tr_top_pred_acc.data# + tr_bot.data
-				acc_meas = tr_top_pred_acc.data + tr_bot.data 
+				acc_meas = tr_top_pred_acc.data + tr_bot.data
 				acc_drift_calc = tr_top_pred_acc.data# - tr_bot_disp.data
 				acc_drift_meas = tr_top.data - tr_bot.data
-
-				fig2, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
-				axs[0].plot(tr_top.data,color='blue',label=f'{tr_top_disp.stats.channel} acceleration')#tr_bot.times(),
-				axs[0].plot(acc_meas,color='orange',label=f'{tr_top_disp.stats.channel} acceleration simulated')
-				axs[1].plot(acc_drift_meas,color='blue',label=f'{tr_top_disp.stats.channel} drift')
-				axs[1].plot(acc_drift_calc,color='orange',label=f'{tr_top_disp.stats.channel} drift simulated')
-
-				axs[0].legend(loc='upper right')
-				axs[1].legend(loc='upper right')
-
-				# axs[0].set_xlim([0,3000])
-				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
-				plt.tight_layout()
-				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_acc.png')
-				plt.close(fig2)
-
 				# VELOCITY
-				vel_meas = tr_top_pred_vel.data + tr_bot_vel.data # np.concatenate(([0,0], tr_bot.data[2:]), axis=0)
+				vel_meas = tr_top_pred_vel.data + tr_bot_vel.data
 				vel_drift_calc = tr_top_pred_vel.data# - tr_bot_disp.data
 				vel_drift_meas = tr_top_vel.data - tr_bot_vel.data
 
-				fig2, axs = plt.subplots(2,1,sharex=True,sharey=False,dpi=300,figsize=(12,6))
-				axs[0].plot(tr_top_vel.data,color='blue',label=f'{tr_top_disp.stats.channel} velocity')#tr_bot.times(),
-				axs[0].plot(vel_meas,color='orange',label=f'{tr_top_disp.stats.channel} velocity simulated')
-				axs[1].plot(vel_drift_meas,color='blue',label=f'{tr_top_disp.stats.channel} drift')
-				axs[1].plot(vel_drift_calc,color='orange',label=f'{tr_top_disp.stats.channel} drift simulated')
-
-				axs[0].legend(loc='upper right')
-				axs[1].legend(loc='upper right')
-
-				# axs[0].set_xlim([0,3000])
-				axs[0].set_title(f'Evid:{evid} | ID:{tr_top.id} | W0:{T0s[tr_top.stats.channel[-1]]} | Sigma:{sigma} | Angle:{angle}') #R:{r_epi}km| 
-				plt.tight_layout()
-				plt.savefig(f'../Figures/Relative_Displacement/{evid}/{tr_top.id}_vel.png')
-				plt.close(fig2)
+				plot_res('DIS',tr_top_disp.stats.channel,tr_top_disp.data,disp_meas,drift_meas,drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
+				plot_res('VEL',tr_top_disp.stats.channel,tr_top_vel.data,vel_meas,vel_drift_meas,vel_drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
+				plot_res('ACC',tr_top_disp.stats.channel,tr_top.data,acc_meas,acc_drift_meas,acc_drift_calc,evid,tr_top.id,sigma,angle,xlim=[0,3000])
+	# Save Results in a CSV file
+	db_ev['Station'] = stanames
+	db_ev['Channel'] = channelnames
+	db_ev['PGABot'] = pgabots
+	db_ev['PGATop'] = pgatops
+	db_ev['PGATopReal'] = pgatopreals
+	db_ev['PGARat'] = pgaratpred
+	db_ev['PGARatReal'] = pgaratreal
+	db_ev['PGDBot'] = pgdbots
+	db_ev['PGDTop'] = pgdtops
+	db_ev['PGDTopReal'] = pgdtopreals
+	db_ev['PGDRat'] = pgdratpred
+	db_ev['PGDRatReal'] = pgdratreal
+	if len(db_ev) > 0:
+		db_ev.to_csv(f'../DBs/GMP_Ratios/{evid}.csv',index=False)
