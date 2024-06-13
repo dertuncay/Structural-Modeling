@@ -110,12 +110,14 @@ def plot_res(dom,chan,top_obs,top_pred,drift_obs,drift_pred,evid,id,sigma,angle,
 	axs[0].plot(top_pred,color='orange',label=f'{chan} {outlabel} simulated')
 	axs[1].plot(drift_obs,color='blue',label=f'{chan} drift')
 	axs[1].plot(drift_pred,color='orange',label=f'{chan} drift simulated')
+	axs[2].plot(bot_obs,color='blue',label=f'{chan} {outlabel} bottom')
 	axs[0].legend(loc='upper right')
 	axs[1].legend(loc='upper right')
+	axs[2].legend(loc='upper right')
 	axs[0].set_title(f'Evid:{evid} | ID:{id} | W0:{T0s[chan[-1]]} | Sigma:{sigma} | Angle:{angle}')
 	if xlim != [None,None]:
 		axs[0].set_xlim(xlim)
-	axs[2].plot(bot_obs,color='blue',label=f'{chan} {outlabel} Bottom')
+	
 	plt.tight_layout()
 	plt.savefig(f'../Figures/Relative_Displacement/{evid}/{id}_{ftag}.png')
 	plt.close(fig)
