@@ -1,34 +1,34 @@
-Station,Location,Latitude,Longitude,Comune,Province,Address,Angle,GearthAngle,GearthLongAxesAngle,Year,Building Type,Number of Floor,Number of Basement,f0 [hz],vs30 (m/s),f0 building [hz]
-AVIA,0-4,46.067017,12.58815,Aviano,PN,Piazza Giacomo Matteotti 1,126,,36,1976 or later,Reinforced concrete,3,0,0.5,,6.7-7.2
-BUDO,0-3,46.042773,12.532386,Budoia,PN,Piazza Umberto I 12,132,,144,,Load-bearing masonry,3,0,2.0-5.0,,7.9-8.1
-BURA,0-2,45.899105,12.536768,Brugnera,PN,Via Villa Varda 2,296,,26,1900ish,Load-bearing masonry,3,0,,,5.8-6.3
-CIVD,0-4,46.092832,13.430971,Cividale,UD,Corso Paolino d'Aquileia 2,151,,159,1976 or before,Reinforced concrete,3,1,1.5,,5.7-5.9
-CLLU,4,45.940475,12.341591,Colle Umberto,TV,Via dell'abbazia 1,,,54,,,,,,,
-CODR,0,45.96154,12.977395,Codroipo,UD,Piazza Giuseppe Garibaldi 81,8,,100,1951-1953,Mixed load-bearing masonry and reinforced concrete frame,4,0,0-2,,5.2-5.4
-CORD,0-1,45.988439,12.707642,Cordenons,PN,Piazza della Vittoria 1,342,,157,1960-1970,Reinforced concrete partitions and frames,3,1,0-1,,3.8-3.9
-FDSP,0,46.423372,12.581961,Forni di Sopra,UD,Via Nazionale  214,0,,351,,Load-bearing masonry,3,0,,,5.2-5.6
-FIVE,0-2,45.928181,12.734604,Fiume Veneto,PN,Via Conte Ricchieri 1,86,,84,,Reinforced concrete frame,2,0,0-2.1,,5.3-5.5
-FOFR,0,45.988691,12.547672,Fontanafredda,PN,Via G. Puccini 8,0,,27,1973‐1981,Reinforced concrete frame,2,0,1.5 & 2.3,,5.9-6.2
-FOGL,0-2,45.864883,13.481658,Fogliano,GO,Largo Donatori di Sangue 10,348,,348,1890-1900,Load-bearing masonry,2,0,1.6-2.3,,6.6-6.9
-GEMO,0-5,46.279008,13.138681,Gemona,UD,Via Carlo Caneva 25,313,,40,,Reinforced concrete partitions and frames,5,0,0-1.5,,6.3-6.5
-GORZ,0-4,45.942486,13.6204,Gorizia,GO,Via Garibaldi 7,211,,34,19th century,Load-bearing masonry,5,1,,,4.0-4.2
-MNFL,0-2,45.809897,13.527662,Monfalcone,GO,Via Duca d’Aosta 34,125,,17,1960,"Load-bearing masonry, partitions and reinforced concrete frames.",4,1,0-1 & 4-5,,4.8-5.1
-POLE,2,46.035371,12.499687,Polcenigo,PN,Via Piantuzze 2,328,,59,1960,Load-bearing masonry,2,1,1-1.5,,6.1-6.5
-PORC,0,45.958046,12.611483,Porcia,PN,Via Antonio de Pellegrini 4,265,,83,1977,Reinforced concrete partitions and frames,3,1,,,5.5-5.7
-PORD,0,45.954095,12.659966,Pordenone,PN,Corso Vittorio Emanuele II 64,0,,107,1960,Reinforced concrete partitions and frames,4,1,1,,4.4-4.6
-PRPN,0-3,45.894233,12.596872,Prata di Pordenone,PN,Via Roma 33,,327,59,16th century,Load-bearing masonry,4,0,0-1,,5.4-6.0
-RDLG,0-3,45.824285,13.500427,Ronchi dei Legionari,GO,Piazza Unità 1,179,,175,,Load-bearing masonry,3,1,0-1 & 2-3,,5.3-5.5
-ROVD,0-2,46.009303,12.618131,Roveredo in Piano,PN,Via Giosuè Carducci 11,,15,104,1982,Reinforced concrete frame,2,0,1-1.5,,9.6-9.9
-SACI,0,45.954416,12.50275,Sacile,PN,Piazza del Popolo 65,0,,116-48,1483,Load-bearing masonry,4,0,1,,
-SLIS,0,45.932972,13.526533,San Lorenzo Isontino,GO,Via Boschetto 1,,314,44,1987,Prefabricated reinforced concrete structure,2,0,0-1.5,,7.5-7.8
-SPLM,0,46.112249,12.905607,Spilimbergo,PN,Piazzetta Giambattista Tiepolo 1,,105,15-105,14th century,Load-bearing masonry,3,1,1.6,,5.4-5.7
-STRZ,0-2,45.806036,13.499851,Staranzano,GO,Piazza Dante Alighieri 26,344,,75,1973‐1974,Reinforced concrete partitions and frames,3,0,1.4 & 2.8,,6.6-7.0
-TOLM,0-3,46.404533,13.015648,Tolmezzo,UD,Via Linussio 1,150,,150,1900ish,Load-bearing masonry,4,0,,,5.6-5.8
-TRIC,4,46.161916,13.211829,Tricesimo,UD,Via Giuseppe Ellero 1,268,,177,1914‐1924,"Load-bearing masonry, partitions and reinforced concrete frames",3,1,1-1.5,,4.4-4.6
-TRIE,5,45.649911,13.76668,Trieste,TS,Piazza Unità 1,229,,140,1880-1883,Load-bearing masonry with steel elements,5,0,1.4-2.5,,3.3-3.7
-TRPC,0,46.163905,13.207926,Tricesimo,UD,Via della Soima,0,,150,,,,,,,
-TRVS,0-3,46.505234,13.577802,Tarvisio,UD,Via Roma 3,165,,82,,Load-bearing masonry,3,1,0.5,,4.9-5.2
-TURC,0,45.820998,13.444857,Turriaco,GO,Piazza Libertà 13,236,,145,1900ish,Load-bearing masonry,3,0,0.2-0.3,,6.5-6.7
-TVGN,0-3,46.101265,13.215317,Tavagnacco,UD,Piazza Indipendenza 1,,16,92-164,1997‐1998,Reinforced concrete partitions,3,1,,,7.4-7.7
-UNIU,0-4,46.083036,13.216463,Udine,UD,Via del Cotonificio 114,,162,162,1970,Reinforced concrete frame,4,1,0-1.3,,4.9-5.1
-VTTV,0-4,45.989852,12.296083,Vittorio Veneto,TV,Piazza del Popolo 14,,,163,,,,,,,
+Station,Location,Latitude,Longitude,Comune,Province,Address,Angle,GearthAngle,GearthLongAxesAngle,Year,Building Type,Number of Floor,Number of Basement,f0 [hz],vs30 (m/s),f0 building X [hz],f0 building Y [hz]
+AVIA,0-4,46.067017,12.58815,Aviano,PN,Piazza Giacomo Matteotti 1,126,,36,1976 or later,Reinforced concrete,3,0,0.5,,6.7-7.2,6.7-7.2
+BUDO,0-3,46.042773,12.532386,Budoia,PN,Piazza Umberto I 12,132,,144,,Load-bearing masonry,2,0,2.0-5.0,,7.9-8.1,7.9-8.1
+BURA,0-2,45.899105,12.536768,Brugnera,PN,Via Villa Varda 2,296,,26,1900ish,Load-bearing masonry,3,0,,,5.8-6.3,5.8-6.3
+CIVD,0-4,46.092832,13.430971,Cividale,UD,Corso Paolino d'Aquileia 2,151,,159,1976 or before,Reinforced concrete,3,1,1.5,,5.7-5.9,5.7-5.9
+CLLU,4,45.940475,12.341591,Colle Umberto,TV,Via dell'abbazia 1,,,54,,,,,,,,
+CODR,0,45.96154,12.977395,Codroipo,UD,Piazza Giuseppe Garibaldi 81,8,,100,1951-1953,Mixed load-bearing masonry and reinforced concrete frame,4,0,0-2,,5.2-5.4,5.4-5.7
+CORD,0-1,45.988439,12.707642,Cordenons,PN,Piazza della Vittoria 1,342,,157,1960-1970,Reinforced concrete partitions and frames,3,1,0-1,,3.8-3.9,3.8-3.9
+FDSP,0,46.423372,12.581961,Forni di Sopra,UD,Via Nazionale  214,0,,351,,Load-bearing masonry,3,0,,,5.2-5.6,5.2-5.6
+FIVE,0-2,45.928181,12.734604,Fiume Veneto,PN,Via Conte Ricchieri 1,86,,84,,Reinforced concrete frame,2,0,0-2.1,,5.3-5.5,5.3-5.5
+FOFR,0,45.988691,12.547672,Fontanafredda,PN,Via G. Puccini 8,0,,27,1973‐1981,Reinforced concrete frame,2,0,1.5 & 2.3,,5.9-6.2,5.9-6.2
+FOGL,0-2,45.864883,13.481658,Fogliano,GO,Largo Donatori di Sangue 10,348,,348,1890-1900,Load-bearing masonry,2,0,1.6-2.3,,6.6-6.9,7.0-7.4
+GEMO,0-5,46.279008,13.138681,Gemona,UD,Via Carlo Caneva 25,313,,40,,Reinforced concrete partitions and frames,5,0,0-1.5,,6.3-6.5,6.3-6.5
+GORZ,0-4,45.942486,13.6204,Gorizia,GO,Via Garibaldi 7,211,,34,19th century,Load-bearing masonry,5,1,,,4.0-4.2,4.0-4.2
+MNFL,0-2,45.809897,13.527662,Monfalcone,GO,Via Duca d’Aosta 34,125,,17,1960,"Load-bearing masonry, partitions and reinforced concrete frames.",4,1,0-1 & 4-5,,4.8-5.1,4.8-5.1
+POLE,2,46.035371,12.499687,Polcenigo,PN,Via Piantuzze 2,328,,59,1960,Load-bearing masonry,2,1,1-1.5,,6.1-6.5,6.1-6.5
+PORC,0,45.958046,12.611483,Porcia,PN,Via Antonio de Pellegrini 4,265,,83,1977,Reinforced concrete partitions and frames,3,1,,,8.3-8.5,5.5-5.7
+PORD,0,45.954095,12.659966,Pordenone,PN,Corso Vittorio Emanuele II 64,0,,107,1960,Reinforced concrete partitions and frames,4,1,1,,4.4-4.6,4.4-4.6
+PRPN,0-3,45.894233,12.596872,Prata di Pordenone,PN,Via Roma 33,,327,59,16th century,Load-bearing masonry,3,0,0-1,,5.8-6.1,5.3-5.5
+RDLG,0-3,45.824285,13.500427,Ronchi dei Legionari,GO,Piazza Unità 1,179,,175,,Load-bearing masonry,3,1,0-1 & 2-3,,5.3-5.5,5.3-5.5
+ROVD,0-2,46.009303,12.618131,Roveredo in Piano,PN,Via Giosuè Carducci 11,,15,104,1982,Reinforced concrete frame,2,0,1-1.5,,9.6-9.9,9.6-9.9
+SACI,0,45.954416,12.50275,Sacile,PN,Piazza del Popolo 65,0,,116-48,1483,Load-bearing masonry,4,0,1,,,
+SLIS,0,45.932972,13.526533,San Lorenzo Isontino,GO,Via Boschetto 1,,314,44,1987,Prefabricated reinforced concrete structure,2,0,0-1.5,,7.5-7.8,8.0-8.2
+SPLM,0,46.112249,12.905607,Spilimbergo,PN,Piazzetta Giambattista Tiepolo 1,,105,15-105,14th century,Load-bearing masonry,3,1,1.6,,5.4-5.7,5.4-5.7
+STRZ,0-2,45.806036,13.499851,Staranzano,GO,Piazza Dante Alighieri 26,344,,75,1973‐1974,Reinforced concrete partitions and frames,3,0,1.4 & 2.8,,6.6-7.0,6.6-7.0
+TOLM,0-3,46.404533,13.015648,Tolmezzo,UD,Via Linussio 1,137,,150,1900ish,Load-bearing masonry,4,0,,,6.2-6.4,5.6-5.8
+TRIC,4,46.161916,13.211829,Tricesimo,UD,Via Giuseppe Ellero 1,268,,177,1914‐1924,"Load-bearing masonry, partitions and reinforced concrete frames",3,1,1-1.5,,4.4-4.6,4.7-4.9
+TRIE,5,45.649911,13.76668,Trieste,TS,Piazza Unità 1,229,,140,1880-1883,Load-bearing masonry with steel elements,4,0,1.4-2.5,,3.3-3.7,3.3-3.7
+TRPC,0,46.163905,13.207926,Tricesimo,UD,Via della Soima,0,,150,,,,,,,,
+TRVS,0-3,46.505234,13.577802,Tarvisio,UD,Via Roma 3,165,,82,,Load-bearing masonry,3,1,0.5,,4.9-5.2,4.9-5.2
+TURC,0,45.820998,13.444857,Turriaco,GO,Piazza Libertà 13,236,,145,1900ish,Load-bearing masonry,2,0,0.2-0.3,,6.5-6.7,6.5-6.7
+TVGN,0-3,46.101265,13.215317,Tavagnacco,UD,Piazza Indipendenza 1,,16,92-164,1997‐1998,Reinforced concrete partitions,3,1,,,7.4-7.7,7.4-7.7
+UNIU,0-4,46.083036,13.216463,Udine,UD,Via del Cotonificio 114,,162,162,1970,Reinforced concrete frame,4,1,0-1.3,,4.9-5.1,5.6-6.1
+VTTV,0-4,45.989852,12.296083,Vittorio Veneto,TV,Piazza del Popolo 14,,,163,,,,,,,,
