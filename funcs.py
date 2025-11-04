@@ -15,6 +15,38 @@ def acc2disp(st,freqmin=0.8,freqmax=10):
 	st_disp.detrend('linear')
 	return st, st_vel, st_disp
 
+def drift2top(st_bottom,st_drift):
+    st_top = Stream()
+    for tr_bot, tr_drift in zip(st_bottom,st_drift):
+        dt = tr_bot.stats.delta
+        top = tr_bot.data + tr_drift.data
+        tr_top = Trace(data=np.array(top))
+        tr_top.stats.delta = dt
+        tr_top.detrend('linear')
+        tr_top.taper(0.05)
+        st_top += tr_top
+    return st_top
+
+def top2drift(st_bottom,st_top):
+    st_drift = Stream()
+    for tr_bot, tr_top in zip(st_bottom,st_top):
+        dt = tr_bot.stats.delta
+        drift = tr_top.data - tr_bot.data
+        tr_drift = Trace(data=np.array(drift))
+        tr_drift.stats.delta = dt
+        tr_drift.detrend('linear')
+        tr_drift.taper(0.05)
+        st_drift += tr_drift
+    return st_drift
+
+def array2stream(st,array,dt):
+    tr = Trace(data=np.array(array))
+    tr.stats.delta = dt
+    tr.detrend('linear')
+    tr.taper(0.05)
+    st += tr
+    return st
+
 def f0h2vs(f,h):
 	return 4*f*h
 
