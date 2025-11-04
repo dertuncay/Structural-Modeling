@@ -1,13 +1,31 @@
+import numpy as np
+
 def ztransform(i,trace,w0,sigma,dt,outlist,outtype='DIS'):
-	'''
-  i: time increment
-	trace: signal collected at the bottom
-	w0: natural frequency of SDOF oscillator
-	sigma: damping ratio (%)
-	dt: time interval
-  outlist: predicted motion
-  outtype: domain of the predicted motion
-	'''
+	"""
+	Calculates drift motion for a SDOF system with a given input parameters
+
+	Parameters:
+	-----------
+	i : integer
+		time increment
+	trace : list or np.ndarray
+		signal collected at the bottom
+	w0 : float
+		natural frequency of SDOF oscillator
+	sigma : float
+		damping ratio (%)
+	dt : float
+		time interval
+	outlist : list
+		predicted motion
+	outtype : string (default: 'DIS')
+		domain of the predicted motion
+	Returns:
+	--------
+	outlist : list
+		predicted motion
+	"""
+
 	wd = w0*np.sqrt(1-sigma**2)
 	b1 = 2*np.exp(-sigma*w0*dt)*np.cos(wd*dt)
 	b2 = -np.exp(-2*sigma*w0*dt)
