@@ -1,6 +1,6 @@
 # RETURN-WP4
 
-It is under development. Feel free to modify.
+It is under development.
 
 ## Necessary Packages 
 
